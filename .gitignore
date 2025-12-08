@@ -1,0 +1,74 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Processing directories
+downloads/*
+processing/*
+outputs/*
+logs/*
+temp/*
+
+# Keep directory structure
+!downloads/.gitkeep
+!processing/.gitkeep
+!outputs/.gitkeep
+!logs/.gitkeep
+!temp/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Database (if added later)
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files
+uploads/*
+
+# Test files
+test_downloads/
+test_outputs/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# FFmpeg temporary files
+*.ffmpeg_*
