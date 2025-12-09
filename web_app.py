@@ -234,7 +234,7 @@ class JobProcessor(threading.Thread):
                     current_percentage = int((idx / total_resolutions) * 100)
                     self.update_progress(f'Encoding {resolution}', current_percentage, 100, 'in-progress')
                     
-                    output_files[resolution] = encoder.encode_single_resolution(
+                    output_files[resolution] = encoder.encode_resolution(
                         processed_video,
                         resolution
                     )
