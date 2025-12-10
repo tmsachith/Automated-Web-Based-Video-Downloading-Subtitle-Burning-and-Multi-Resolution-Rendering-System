@@ -203,12 +203,21 @@ class SubtitleProcessor:
             unicode_fonts = SUBTITLE_CONFIG.get('unicode_fonts', ['Noto Sans Sinhala', 'DejaVu Sans'])
             font_name = unicode_fonts[0] if unicode_fonts else 'DejaVu Sans'
             
-            # FFmpeg command for hard subtitle burning with Unicode support
+            # Create complex filter with subtitles + watermark text for first 10 seconds
+            # The watermark appears at the top for 10 seconds, subtitles appear normally at bottom
+            watermark_text = "This is MovieDownloadSL..."
+            watermark_filter = f"drawtext=text='{watermark_text}':fontfile=/Windows/Fonts/arial.ttf:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
+            subtitle_filter = f"subtitles='{subtitle_filter_path}':force_style='FontName={font_name},FontSize=20,Encoding=utf-8'"
+            
+            # Combine both filters: subtitles + watermark (watermark only shows for first 10 seconds)
+            combined_filter = f"{subtitle_filter},{watermark_filter}"
+            
+            # FFmpeg command for hard subtitle burning with Unicode support + watermark
             # force_style sets font to support Sinhala/Unicode characters
             cmd = [
                 'ffmpeg',
                 '-i', str(video_path),
-                '-vf', f"subtitles='{subtitle_filter_path}':force_style='FontName={font_name},FontSize=20,Encoding=utf-8'",
+                '-vf', combined_filter,
                 '-c:v', FFMPEG_CONFIG['video_codec'],
                 '-crf', str(crf),
                 '-preset', preset,
