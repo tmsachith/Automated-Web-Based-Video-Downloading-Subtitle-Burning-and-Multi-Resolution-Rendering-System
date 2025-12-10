@@ -4,6 +4,7 @@ Handles soft embedding and hard burning of subtitles
 """
 import subprocess
 import json
+import os
 from pathlib import Path
 from typing import Optional, Dict
 
@@ -18,6 +19,47 @@ class SubtitleProcessor:
         self.soft_subtitle = SUBTITLE_CONFIG['soft_subtitle']
         self.subtitle_codec = SUBTITLE_CONFIG['subtitle_codec']
         self.burn_style = SUBTITLE_CONFIG['burn_style']
+    
+    def find_sinhala_font(self) -> str:
+        """
+        Find available Sinhala font from project Fonts folder
+        
+        Returns:
+            Path to font file
+        """
+        # Check project Fonts folder first (for deployment)
+        project_fonts = DIRS.get('fonts', Path('Fonts'))
+        if not isinstance(project_fonts, Path):
+            project_fonts = Path('Fonts')
+        
+        # List of Sinhala fonts to try (in priority order)
+        sinhala_fonts = [
+            'NotoSansSinhala-Regular.ttf',
+            'NotoSansSinhala.ttf',
+            'NotoSansSinhala-Bold.ttf',
+        ]
+        
+        # Check if fonts exist in project folder
+        if project_fonts.exists():
+            for font_file in sinhala_fonts:
+                font_path = project_fonts / font_file
+                if font_path.exists():
+                    logger.info(f"Found Sinhala font in project: {font_path}")
+                    return str(font_path.absolute())
+        
+        # Fallback: Check Windows fonts (for local development)
+        windows_fonts = Path(r'C:\Windows\Fonts')
+        if windows_fonts.exists():
+            for font_file in sinhala_fonts:
+                font_path = windows_fonts / font_file
+                if font_path.exists():
+                    logger.info(f"Found Sinhala font in Windows: {font_path}")
+                    return str(font_path)
+        
+        # Last resort: use project font path even if not verified
+        fallback_path = project_fonts / 'NotoSansSinhala-Regular.ttf'
+        logger.warning(f"Font not verified, using fallback path: {fallback_path}")
+        return str(fallback_path.absolute())
     
     def get_video_info(self, video_path: Path) -> Dict:
         """
@@ -201,15 +243,35 @@ class SubtitleProcessor:
                 crf = FFMPEG_CONFIG['crf']
                 threads = 0  # Auto
             
-            # Get Unicode font for Sinhala support
-            unicode_fonts = SUBTITLE_CONFIG.get('unicode_fonts', ['Noto Sans Sinhala', 'DejaVu Sans'])
-            font_name = unicode_fonts[0] if unicode_fonts else 'DejaVu Sans'
+            # Get Sinhala font for proper Unicode rendering
+            sinhala_font = self.find_sinhala_font()
+            logger.info(f"Using font for subtitles: {sinhala_font}")
+            
+            # Escape font path for FFmpeg (handle special characters)
+            sinhala_font_escaped = sinhala_font.replace('\\', '/').replace(':', '\\\\:')
+            
+            # Get project fonts directory for fontsdir parameter
+            project_fonts = DIRS.get('fonts', Path('Fonts'))
+            if not isinstance(project_fonts, Path):
+                project_fonts = Path('Fonts')
+            fonts_dir = str(project_fonts.absolute()).replace('\\', '/')
             
             # Create complex filter with subtitles + watermark text for first 10 seconds
             # The watermark appears at the top for 10 seconds, subtitles appear normally at bottom
             watermark_text = "This is MovieDownloadSL..."
-            watermark_filter = f"drawtext=text='{watermark_text}':fontfile=/Windows/Fonts/arial.ttf:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
-            subtitle_filter = f"subtitles='{subtitle_filter_path}':force_style='FontName={font_name},FontSize=20,Encoding=utf-8'"
+            # Try to use project arial font or fallback
+            arial_path = project_fonts / 'arial.ttf'
+            if arial_path.exists():
+                arial_font = str(arial_path.absolute()).replace('\\', '/')
+            else:
+                arial_font = '/Windows/Fonts/arial.ttf'
+            watermark_filter = f"drawtext=text='{watermark_text}':fontfile={arial_font}:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
+            
+            # Subtitle filter with proper Unicode/Sinhala support using project font
+            # charenc=UTF-8: Force UTF-8 character encoding
+            # fontsdir: Point to project Fonts directory
+            # FontFile: Direct path to Sinhala font file
+            subtitle_filter = f"subtitles='{subtitle_filter_path}':charenc=UTF-8:fontsdir={fonts_dir}:force_style='FontFile={sinhala_font_escaped},FontSize=22,Bold=0,PrimaryColour=&HFFFFFF,OutlineColour=&H000000,Outline=2,BackColour=&H80000000'"
             
             # Combine both filters: subtitles + watermark (watermark only shows for first 10 seconds)
             combined_filter = f"{subtitle_filter},{watermark_filter}"

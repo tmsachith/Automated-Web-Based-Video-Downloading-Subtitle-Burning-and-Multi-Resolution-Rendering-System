@@ -13,7 +13,8 @@ DIRS = {
     'processing': BASE_DIR / 'processing',
     'outputs': BASE_DIR / 'outputs',
     'logs': BASE_DIR / 'logs',
-    'temp': BASE_DIR / 'temp'
+    'temp': BASE_DIR / 'temp',
+    'fonts': BASE_DIR / 'Fonts'
 }
 
 # Create directories if they don't exist
