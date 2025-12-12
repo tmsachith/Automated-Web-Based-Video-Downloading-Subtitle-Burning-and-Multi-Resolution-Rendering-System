@@ -285,15 +285,33 @@ class SubtitleProcessor:
                 arial_font = 'C\\\\\\\\:/Windows/Fonts/arial.ttf'
             watermark_filter = f"drawtext=text='{watermark_text}':fontfile={arial_font}:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
             
-            # Subtitle filter - Use direct fontfile path to bindumathi.ttf
-            # Get the full path to bindumathi font file
-            bindumathi_font_path = project_fonts / 'bindumathi.ttf'
-            bindumathi_font_forward = str(bindumathi_font_path.absolute()).replace('\\', '/')
+            # Get temp directory for fonts.conf
+            temp_dir = DIRS.get('temp', Path('temp'))
+            if not isinstance(temp_dir, Path):
+                temp_dir = Path('temp')
+            temp_dir.mkdir(exist_ok=True)
+            
+            # Create a fonts.conf file to help libass find the bindumathi font
+            fonts_conf_content = f"""<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>{project_fonts.absolute()}</dir>
+  <cachedir>{temp_dir.absolute()}/fontconfig-cache</cachedir>
+</fontconfig>
+"""
+            fonts_conf_path = temp_dir / 'fonts.conf'
+            fonts_conf_path.write_text(fonts_conf_content, encoding='utf-8')
+            
+            # Set FONTCONFIG_FILE environment variable
+            import os
+            os.environ['FONTCONFIG_FILE'] = str(fonts_conf_path.absolute())
+            
+            # Subtitle filter - libass will now find bindumathi from fonts.conf
             subtitle_filter_forward = str(subtitle_path.absolute()).replace('\\', '/')
             
-            # CRITICAL: Using fontfile parameter to directly specify the font file path
-            # This is more reliable than using Fontname with fontsdir
-            subtitle_filter = f"subtitles='{subtitle_filter_forward}':fontfile='{bindumathi_font_forward}':force_style='Fontsize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=1,Bold=0,Italic=0'"
+            # Use the font family name from the TTF file
+            # For bindumathi.ttf, the font family name is typically "Bindumathi"
+            subtitle_filter = f"subtitles='{subtitle_filter_forward}':force_style='Fontname=Bindumathi,Fontsize=24,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=1,Bold=0,Italic=0'"
             
             # Combine both filters: subtitles + watermark (watermark only shows for first 10 seconds)
             combined_filter = f"{subtitle_filter},{watermark_filter}"
