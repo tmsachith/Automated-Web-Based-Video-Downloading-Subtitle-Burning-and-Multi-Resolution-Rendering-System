@@ -309,8 +309,8 @@ class SubtitleProcessor:
             ]
             
             logger.debug(f"FFmpeg command: {' '.join(cmd)}")
-            logger.warning("⚠️ HARD SUBTITLE BURNING IS VERY SLOW (10-30 min)!")
-            logger.warning("💡 For production, use SOFT SUBTITLES (takes <1 minute)")
+            logger.warning("ΓÜá∩╕Å HARD SUBTITLE BURNING IS VERY SLOW (10-30 min)!")
+            logger.warning("≡ƒÆí For production, use SOFT SUBTITLES (takes <1 minute)")
             logger.info("Processing every video frame with subtitle overlay...")
             
             # Get video duration for progress calculation
@@ -421,11 +421,11 @@ class SubtitleProcessor:
         )
         
         if soft_sub:
-            logger.info("✓ Soft subtitles are FAST (~1 minute)")
+            logger.info("Γ£ô Soft subtitles are FAST (~1 minute)")
             return self.embed_soft_subtitle(video_path, subtitle_path)
         else:
-            logger.warning("⚠️ Hard subtitles are VERY SLOW (10-30 minutes)!")
-            logger.warning("💡 Consider using soft subtitles for production")
+            logger.warning("ΓÜá∩╕Å Hard subtitles are VERY SLOW (10-30 minutes)!")
+            logger.warning("≡ƒÆí Consider using soft subtitles for production")
             return self.embed_hard_subtitle(video_path, subtitle_path, progress_callback=progress_callback, cancel_check=cancel_check)
 
 
