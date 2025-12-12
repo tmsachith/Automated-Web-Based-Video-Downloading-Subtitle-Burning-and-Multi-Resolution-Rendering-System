@@ -337,25 +337,34 @@ class SubtitleProcessor:
             fonts_dir_abs = escape_ffmpeg_path_for_filter(str(project_fonts.absolute()))
             subtitle_file_abs = escape_ffmpeg_path_for_filter(str(subtitle_file_to_use.absolute()))
             
+            # Escape special characters for FFmpeg filter
+            subtitle_file_escaped = subtitle_file_abs.replace(":", "\\:")
+            fonts_dir_escaped = fonts_dir_abs.replace(":", "\\:")
+            
             logger.info(f"Fonts directory: {fonts_dir_abs}")
             logger.info(f"Subtitle file: {subtitle_file_abs}")
             
             # STEP 4: Build subtitle filter
             # Using subtitles filter with fontsdir and charenc for proper Sinhala rendering
-            subtitle_filter = f"subtitles='{subtitle_file_abs}':fontsdir='{fonts_dir_abs}':charenc=UTF-8"
+            subtitle_filter = f"subtitles={subtitle_file_escaped}:fontsdir={fonts_dir_escaped}:charenc=UTF-8"
             
             # STEP 5: Add watermark if needed
             watermark_text = "This is MovieDownloadSL..."
             arial_path = project_fonts / 'arial.ttf'
             if arial_path.exists():
-                arial_font = escape_ffmpeg_path_for_filter(str(arial_path.absolute()))
+                arial_font_abs = escape_ffmpeg_path_for_filter(str(arial_path.absolute()))
+                arial_font_escaped = arial_font_abs.replace(":", "\\:")
+                watermark_filter = f"drawtext=text='{watermark_text}':fontfile={arial_font_escaped}:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
             else:
-                arial_font = 'C:/Windows/Fonts/arial.ttf'
-            
-            watermark_filter = f"drawtext=text='{watermark_text}':fontfile={arial_font}:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
+                # Skip watermark if arial.ttf not in Fonts folder
+                logger.warning("arial.ttf not found in Fonts folder - skipping watermark")
+                watermark_filter = None
             
             # Combine filters
-            combined_filter = f"{subtitle_filter},{watermark_filter}"
+            if watermark_filter:
+                combined_filter = f"{subtitle_filter},{watermark_filter}"
+            else:
+                combined_filter = subtitle_filter
             logger.info(f"Video filter: {combined_filter}")
             
             # STEP 6: Memory-optimized settings
