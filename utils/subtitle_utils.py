@@ -44,8 +44,8 @@ def escape_ass_text(line: str) -> str:
     )
     
     # Remove other HTML tags (bold, italic, etc.) - keep content
-    line = re.sub(r"<b>(.*?)</b>", r"{\b1}\1{\b0}", line, flags=re.IGNORECASE)
-    line = re.sub(r"<i>(.*?)</i>", r"{\i1}\1{\i0}", line, flags=re.IGNORECASE)
+    line = re.sub(r"<b>(.*?)</b>", r"{\\b1}\1{\\b0}", line, flags=re.IGNORECASE)
+    line = re.sub(r"<i>(.*?)</i>", r"{\\i1}\1{\\i0}", line, flags=re.IGNORECASE)
     line = re.sub(r"</?[^>]+>", "", line)  # Remove remaining tags
     
     # Convert newlines
