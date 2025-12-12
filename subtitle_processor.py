@@ -285,11 +285,10 @@ class SubtitleProcessor:
                 arial_font = 'C\\\\\\\\:/Windows/Fonts/arial.ttf'
             watermark_filter = f"drawtext=text='{watermark_text}':fontfile={arial_font}:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-text_w)/2:y=30:enable='lt(t,10)'"
             
-            # Subtitle filter - CRITICAL: Enable shaping for complex scripts like Sinhala
-            # The shaping=complex parameter enables HarfBuzz text shaping which correctly handles
-            # combining characters, ligatures, and other complex script features in Sinhala
+            # Subtitle filter - Use charenc for proper UTF-8 encoding and fontsdir for custom fonts
+            # charenc=UTF-8 ensures proper Unicode character handling for Sinhala
             # fontsdir tells FFmpeg where to find custom fonts
-            subtitle_filter = f"subtitles='{subtitle_filter_path}':fontsdir={fonts_dir_ffmpeg}:shaping=complex:force_style='FontName=Noto Sans Sinhala,FontSize=24,Bold=0,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=1'"
+            subtitle_filter = f"subtitles='{subtitle_filter_path}':charenc=UTF-8:fontsdir={fonts_dir_ffmpeg}:force_style='FontName=Noto Sans Sinhala,FontSize=24,Bold=0,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Shadow=1'"
             
             # Combine both filters: subtitles + watermark (watermark only shows for first 10 seconds)
             combined_filter = f"{subtitle_filter},{watermark_filter}"
