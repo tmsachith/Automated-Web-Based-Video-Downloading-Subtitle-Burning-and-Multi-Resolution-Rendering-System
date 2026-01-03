@@ -37,7 +37,6 @@ This project is a comprehensive system designed to:
 
 ## Deployment
 - The project includes configurations for deployment on platforms like Railway.
-- Refer to `RAILWAY_DEPLOYMENT.md` for detailed instructions.
 
 ## Contributing
 1. Fork the repository.
@@ -46,6 +45,3 @@ This project is a comprehensive system designed to:
 
 ## License
 This project is licensed under the MIT License. See `LICENSE` for more details.
-
-## Contact
-For any inquiries or support, please contact the project maintainer at `support@example.com`.
